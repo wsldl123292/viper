@@ -202,6 +202,7 @@ type Viper struct {
 	automaticEnvApplied bool
 	envKeyReplacer      StringReplacer
 	allowEmptyEnv       bool
+	caseSensitiveKeys   bool
 
 	config         map[string]interface{}
 	override       map[string]interface{}
@@ -2111,6 +2112,22 @@ func (v *Viper) getConfigFile() (string, error) {
 	return v.configFile, nil
 }
 
+// SetKeysCaseSensitive disables the default behaviour of
+// case-insensitivising (lowercasing) keys and preserves the key casing
+// as they are found in the config files. It is important
+// to note that operations such as set and merge when
+// case sensitivity is 'on', and whtn it is turneed 'off',
+// are incompatible. A key that is set when case sentivity
+// is 'on' may not be retrievable when case sensitivity is turned 'off',
+// as the original casing is permanently lost in the former mode.
+// That is ideally, this should only be invoked only once,
+// during initialisation, and the subsequent usage must adhere
+// to the same case sentivity.
+func SetKeysCaseSensitive(on bool) { v.SetKeysCaseSensitive(on) }
+func (v *Viper) SetKeysCaseSensitive(on bool) {
+	v.caseSensitiveKeys = on
+}
+
 func (v *Viper) searchInPath(in string) (filename string) {
 	jww.DEBUG.Println("Searching for config in ", in)
 	for _, ext := range SupportedExts {
@@ -2128,6 +2145,15 @@ func (v *Viper) searchInPath(in string) (filename string) {
 	}
 
 	return ""
+}
+
+// caseKey cases (preserves sensitivity or lowercases) a
+// given key based on the keyCaseSensitivity config.
+func (v *Viper) caseKey(in string) (filename string) {
+	if v.caseSensitiveKeys {
+		return in
+	}
+	return strings.ToLower(in)
 }
 
 // Search all configPaths for any config file.
