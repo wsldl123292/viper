@@ -235,6 +235,7 @@ func New() *Viper {
 	v.env = make(map[string][]string)
 	v.aliases = make(map[string]string)
 	v.typeByDefValue = false
+	v.caseSensitiveKeys = true
 
 	return v
 }
@@ -793,7 +794,7 @@ func Get(key string) interface{} { return v.Get(key) }
 
 func (v *Viper) Get(key string) interface{} {
 	lcaseKey := v.caseKey(key)
-	val := v.find(lcaseKey,true)
+	val := v.find(lcaseKey, true)
 	if val == nil {
 		return nil
 	}
